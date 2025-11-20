@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#004080">
+
+<!-- Bắt buộc cho iPhone -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="color-scheme" content="light">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Thước phản tư tâm lý và khơi dậy nhân tính làm người</title>
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --ruler-bg:#0b63a8;
+    --slider:#ffffff;
+    --led-size:48px;
+    --green:#2ecc71; --amber:#f39c12; --red:#e74c3c; --white:#ffffff;
+  }
+ body {
+  font-family: system-ui,Segoe UI,Roboto,Helvetica,Arial;
+  margin:0;
+  padding:12px;
+  background-color: #ffffff !important;
+  color: #123 !important;
+  color-scheme: light only;
+-webkit-appearance: none;
+  forced-color-adjust: none;
+}
+.container{max-width:420px;margin:0 auto;}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+h1{font-size:16px;margin:0}
+small{color:#456}
+.ruler-wrap{display:flex;gap:12px;align-items:center}
+.ruler{
+  width:80px; 
+  height:500px; 
+  background:#ffffff; 
+  border-top: 40px solid #004080;
+  border-right: 10px solid #004080; 
+  border-bottom: 20px solid #004080;
+  border-left: 10px solid #004080; 
+  border-radius:10px;
+  position:relative;
+  box-shadow:0 4px 10px rgba(0,0,0,0.12); 
+  margin:auto;
+  touch-action:none;
+}
+.tick { 
+  position: absolute; 
+  left: 8px; 
+  right: 8px; 
+  height: 1px; 
+  background: rgba(0,0,0,0.5);
+}
+.label{position:absolute; left:50px; transform:translateX(-100%); color:#000; font-weight:600; font-size:12px}
+.slider{
+  position:absolute; left:6px; right:6px; height:10px; border-radius:6px; border: 5px solid #000; background:var(--slider);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  touch-action:none; user-select:none; cursor:grab;
+  font-weight:600; font-size:13px;
+}
+.slider .knob {
+  width: 17px;
+  height: 17px;
+  background: blue;
+  border: 4px solid #000;
+  border-radius: 4px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.slider:active{background:#eaeaea}
+.led{position: absolute; top: -35px; left: 30%; width:24px; height:24px; border-radius:50%; border: 4px solid #000; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.25)}
+.led.white{background:var(--white)}
+.led.green{background:var(--green)}
+.led.amber{background:var(--amber)}
+.led.red{background:var(--red)}
+.led.pulse{animation:ledPulse 1s infinite}
+@keyframes ledPulse{0%{box-shadow:0 0 6px rgba(255,255,255,0.12)}50%{box-shadow:0 0 18px rgba(0,0,0,0.18)}100%{box-shadow:0 0 6px rgba(255,255,255,0.12)}}
+.status{margin-top:10px; display:flex;justify-content:space-between;align-items:center}
+.countdown,.total{font-weight:700}
+.controls {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;  /* căn giữa theo ngang */
+  gap: 12px;               /* khoảng cách giữa 2 nút */
+  flex-wrap: wrap;          /* xuống dòng khi màn hình nhỏ */
+}
+
+.btn{background:#fff;border:1px solid #d0d7de;padding:8px 10px;border-radius:8px;cursor:pointer}
+.btn.warn{background:#f6d7cf}
+.footer{margin-top:14px;font-size:13px;color:#456}
+
+.hidden { display: none; }
+
+/* LED cam nhấp nháy theo nhịp tiếng còi (~210ms) */
+.led.pulse {
+  animation: pulseFlash 1s infinite;
+}
+
+@keyframes pulseFlash {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+/* LED đỏ pulse riêng */
+/* Hiệu ứng riêng cho LED đỏ — hoàn toàn tách biệt */
+.led-red-alert {
+  animation: ledRedFlash 0.5s infinite ease-in-out;
+}
+
+@keyframes ledRedFlash {
+  0%   { background: #e74c3c; box-shadow: 0 0 6px #e74c3c; }
+  50%  { background: #3d0000; box-shadow: 0 0 12px #ff1a1a; }
+  100% { background: #e74c3c; box-shadow: 0 0 6px #e74c3c; }
+}
+
+
+.pulse-amber {
+  animation: amberBlink 1.885s infinite;
+}
+
+@keyframes amberBlink {
+  0% { opacity: 1; }
+  50% { opacity: 0.1; }
+  100% { opacity: 1; }
+}
+
+.label-left {
+  position: absolute;
+  left: -110px; /* căn trái ra ngoài 1 chút, bạn chỉnh tùy ý */
+  width: 100px;
+  color: #004080;
+  font-weight: 600;
+  font-size: 13px;
+  user-select: none;
+}
+
+.label-left.top {
+  top: 0px; /* gần top border */
+  left:-125px;
+ 
+}
+
+.label-left.middle {
+  top: 51%; 
+  left: -130px;
+  transform: translateY(-50%);
+}
+
+.label-left.bottom {
+  bottom: -15px; /* gần bottom border */
+  left:-130px;
+}
+.label-right{
+  position: absolute;
+  left: -110px; /* căn trái ra ngoài 1 chút, bạn chỉnh tùy ý */
+  width: 100px;
+  color: #004080;
+  font-weight: 600;
+  font-size: 13px;
+  user-select: none;
+}
+
+.label-right.top {
+  top: 0px; /* gần top border */
+  left:-118px;
+ 
+}
+
+.label-right.middle {
+  top: 49%; 
+  left: -118px;
+  transform: translateY(-50%);
+}
+
+.label-right.bottom {
+  bottom: 0px; /* gần bottom border */
+  left:-118px;
+}
+/* ==== NÚT ĐỒNG BỘ – SANG TRỌNG NHƯ iOS ==== */
+.btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 2px solid #004080;
+  color: #004080;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+}
+
+.btn:hover {
+  background: #004080;
+  color: #ffffff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.18);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+/* Nút cảnh báo */
+.btn.warn {
+  border-color: #b00020;
+  color: #b00020;
+}
+
+.btn.warn:hover {
+  background: #b00020;
+  color: white;
+}
+
+/* Các nút không có class cũng được đồng bộ */
+#revBtn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 2px solid #004080;
+  color: #004080;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+}
+
+#revBtn:hover {
+  background: #004080;
+  color: #ffffff;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.18);
+}
+
+#revBtn:active {
+  transform: scale(0.96);
+}
+strong {
+  font-weight: 1000 !important;
+}
+
+</style>
+</head>
+<body>
+<div id="helpModal" style="display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%); width:90%; height:85%; background:#fff; border:2px solid #004080; padding:12px; overflow:auto; z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+  <button id="closeHelp" style="margin-bottom:8px;">Đóng</button>
+  <pre id="helpText" style="white-space: pre-wrap; font-size:18px;"></pre>
+</div>
+<!-- Modal Nhật ký -->
+<div id="reviewModal" style="
+  display:none; position:fixed; top:50%; left:50%; transform: translate(-50%, -50%); width:90%; height:85%;
+  background:#fff; border:2px solid #004080; padding:12px; overflow:auto;
+  z-index:1000; box-shadow:0 4px 12px rgba(0,0,0,0.3);
+">
+  <button id="closeReview" style="margin-bottom:8px;">Đóng</button>
+<div id="reviewContent" style="font-size:16px;"></div>
+</div>
+
+<div class="container">
+  <header>
+    <div>
+      <h1>THƯỚC PHẢN TƯ TÂM LÝ VÀ KHƠI DẬY NHÂN TÍNH LÀM NGƯỜI🖤🕊️</h1>
+      <small><em><b>(Lấy cảm hứng từ thuyết Phân Tâm học của Sigmund Freud)</b></em></small>
+    </div>
+  </header>
+
+  <div class="ruler-wrap">
+  
+    <div style="flex:1">
+      <div id="ruler" class="ruler">
+      <div class="label-left top" style="font-size:14px; color:rgb(255,215,0)" align="center">😇<b> SIÊU NGÃ (+10000)</b></div>
+<div class="label-left middle" style="font-size:14px" align="center"><svg width="24" height="24" viewBox="0 0 24 17" fill="#004080" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="7" r="4"/>
+  <path d="M12 14c-5 0-8 2.5-8 5v1h16v-1c0-2.5-3-5-8-5z"/>
+</svg>
+<b>BẢN <span style="color:rgb(255,215,0)">NGÃ</span> (0)</b></div>
+<div class="label-left bottom" style="font-size:14px" align="center">😈<b> BẢN NĂNG (-10000)</b></div>
+
+        <div id="led" class="led" title="LED trạng thái"></div>
+        <div id="slider" class="slider">
+          &nbsp;⬇︎
+          <div class="knob"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <div>Thời gian còn lại: <span id="countdown" class="countdown">--</span></div>
+    <div id="totalScore" style="display:none;">Tổng điểm: <span id="total" class="total">0</span></div>
+  </div>
+
+  <div class="controls">
+    <button id="resetBtn" class="btn warn">Reset</button>
+    <button id="revBtn">Hồi vị</button>
+    <button id="helpBtn" class="btn">Hướng dẫn</button>
+    <button id="reviewBtn" class="btn">Nhật ký</button>
+
+  </div>
+
+  <div class="footer">
+    <strong>Lưu ý:</strong> Thước chỉ có tác dụng giáo dục tự phản tư, không dùng để phán xét nhân cách, không thể thay thế điều trị tâm lý chuyên môn.
+  </div>
+</div>
+
+<script>
+const CURRENT_CYCLE_KEY = 'freudRuler_current_cycle'; // Khóa lưu trạng thái chu kỳ đang chạy
+const FINISHED_CYCLES_KEY = 'freudRuler_cycles_history'; // Khóa lưu LỊCH SỬ VĨNH VIỄN
+
+function loadFinishedCycles() {
+    try {
+        const cycles = localStorage.getItem(FINISHED_CYCLES_KEY);
+        return cycles ? JSON.parse(cycles) : [];
+    } catch (e) {
+        console.error("Could not load finished cycles", e);
+        return [];
+    }
+}
+
+function saveFinishedCycles(cycles) {
+    try {
+        localStorage.setItem(FINISHED_CYCLES_KEY, JSON.stringify(cycles));
+    } catch (e) {
+        console.error("Could not save finished cycles", e);
+    }
+}
+
+function loadCurrentCycle() {
+    try {
+        const current = localStorage.getItem(CURRENT_CYCLE_KEY);
+        if (current) return JSON.parse(current);
+    } catch (e) {
+        console.error("Could not load current cycle", e);
+    }
+    // Trả về state mặc định nếu không có dữ liệu
+    return { status:'idle', startTimestamp:null, entries:[], total:0 };
+}
+
+function saveCurrentCycle() {
+    try {
+        // Sao chép và lưu state hiện tại (không cần lưu finishedCycles)
+        const dataToSave = {
+            status: state.status,
+            startTimestamp: state.startTimestamp,
+            entries: state.entries,
+            total: state.total
+        };
+        localStorage.setItem(CURRENT_CYCLE_KEY, JSON.stringify(dataToSave));
+    } catch (e) {
+        console.error("Could not save current cycle", e);
+    }
+}
+const STORAGE_KEY = 'freudRuler_v2';
+const MS_COUNTDOWN = 10000; // 168 giờ
+
+const MIN_VALUE = -10000, MAX_VALUE = 10000;
+let audioEnabled = true;
+
+const LED = document.getElementById('led');
+const slider = document.getElementById('slider');
+const ruler = document.getElementById('ruler');
+const countdownEl = document.getElementById('countdown');
+const totalEl = document.getElementById('total');
+const resetBtn = document.getElementById('resetBtn');
+const helpBtn = document.getElementById('helpBtn');
+let state = loadCurrentCycle(); // Tải chu kỳ đang chạy dở (nếu có)
+state.finishedCycles = loadFinishedCycles(); // Tải lịch sử VĨNH VIỄN
+// Âm thanh
+// Ghi nhận 1 lần gạt trong chu kỳ
+function logEntry(value) {
+    const now = new Date();
+    const entry = {
+        value: value,
+        dir: value > 0 ? "Siêu Ngã" : value < 0 ? "Bản Năng" : "Bản Ngã",
+        time: now.toLocaleTimeString('vi-VN'),
+        date: now.toLocaleDateString('vi-VN')
+    };
+
+    state.entries.push(entry);
+    saveCurrentCycle();
+}
+
+function playBeep(freq=880, dur=0.12, vol=0.15){
+  if(!audioEnabled) return;
+  const ctx = new (window.AudioContext||window.webkitAudioContext)();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.type='sine'; o.frequency.value=freq; g.gain.value=vol;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+dur);
+}
+
+// Chuyển value <-> y
+// Chuyển value <-> y, đồng bộ với tick
+// 1) inner height — dùng clientHeight (clientHeight đã exclude border)
+function getInnerH() {
+  return ruler.clientHeight; 
+}
+
+// 2) value -> top (trả top để gán slider.style.top)
+//    Ta tính centerY trong khoảng [0 .. clientHeight], rồi trừ nửa slider để ra top.
+function valueToY(value) {
+  // dùng kích thước thực tế tại thời điểm chạy
+  const innerH = ruler.clientHeight;          // vùng nội bộ (client area) của ruler
+  const sliderH = slider.offsetHeight || 20;  // fallback 20 nếu chưa render xong
+
+  // tâm slider có thể nằm trong [top, bottom]
+  const top = sliderH / 2;
+  const bottom = innerH - sliderH / 2;
+
+  // ratio 0..1 cho value
+  const ratio = (value - MIN_VALUE) / (MAX_VALUE - MIN_VALUE);
+
+  // vị trí tâm theo tỷ lệ (MIN -> top, MAX -> bottom)
+  const centerY = top + ratio * (bottom - top);
+
+  // trả về top để gán slider.style.top
+  return centerY - sliderH / 2;
+}
+
+function yToValue(centerY) {
+  const innerH = ruler.clientHeight;
+  const sliderH = slider.offsetHeight || 20;
+
+  const top = sliderH / 2;
+  const bottom = innerH - sliderH / 2;
+
+  const c = Math.min(bottom, Math.max(top, centerY));
+
+  const ratio = (c - top) / (bottom - top); // 0..1
+
+  // FIX NGƯỢC CHIỀU → không còn lỗi 10000/-10000 sai vị trí
+  return Math.round(MAX_VALUE - ratio * (MAX_VALUE - MIN_VALUE));
+}
+
+function clamp(v,a,b){return Math.min(Math.max(v,a),b);}
+
+// LED
+function LED_set(color){ LED.className='led '+color; }
+function LED_clear() { LED.className='led'; LED.style.background = '#222'; }
+
+// Tick & label
+function renderTicks() {
+  ruler.querySelectorAll('.tick,.label').forEach(n => n.remove());
+
+  const tickCount = 21;
+  const innerHeight = ruler.clientHeight - 1;
+  const spacing = innerHeight / (tickCount - 1);
+
+  for (let i = 0; i < tickCount; i++) {
+    const t = document.createElement('div');
+    t.className = 'tick';
+    t.style.top = (i * spacing) + 'px';
+    ruler.appendChild(t);
+  }
+}
+
+
+
+// Slider kéo
+let dragging=false;
+let dragOffset=0;
+let moved = false;
+let startY = 0; // ⭐ thêm biến này
+
+function initSlider(){
+  renderTicks();
+  requestAnimationFrame(()=> placeSliderAtValue(0));
+
+  // pointerdown
+  slider.addEventListener('pointerdown', e=>{
+    dragging = true;
+    moved=false;
+    slider.setPointerCapture(e.pointerId);
+    slider.style.cursor = 'grabbing';
+
+    startY = e.clientY; // ⭐ lưu vị trí bắt đầu
+    
+    const sliderTop = parseFloat(slider.style.top) || 0;
+    dragOffset = e.clientY - (ruler.getBoundingClientRect().top + sliderTop);
+  });
+
+  // pointermove
+  document.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+
+    // ⭐ Chỉ coi là "kéo" khi di chuyển > 10px
+    if (Math.abs(e.clientY - startY) > 10) {
+      moved = true;
+    }
+
+    const sliderHeight = slider.getBoundingClientRect().height;
+    const rect = ruler.getBoundingClientRect();
+
+    const minY = 0;
+    const maxY = ruler.clientHeight - sliderHeight;
+
+    let y = e.clientY - rect.top - dragOffset;
+    y = clamp(y, minY, maxY);
+
+    slider.style.top = y + 'px';
+  });
+
+  // pointerup
+  document.addEventListener('pointerup', e=>{
+    dragging=false;
+    slider.style.cursor='grab';
+
+    const value = currentValue;
+    logEntry(value);
+  });
+
+  // click
+  slider.addEventListener('click', e=>{
+    // Nếu có kéo (moved = true) → KHÔNG tính điểm
+    if (moved) {
+      e.stopPropagation();
+      return;
+    }
+
+    // ⭐ Không kéo → là NHẤN → tính điểm
+    confirmEntry();
+  });
+
+}
+
+
+// Đặt slider theo value
+function placeSliderAtValue(v){
+  slider.style.top = valueToY(v) + 'px';
+}
+
+// Khi nhấn confirm
+
+function confirmEntry(){
+  if(state.status!=='running'){
+    alert('Nhấn Reset để đưa Tổng điểm về 0 và bắt đầu lại chu kì 1 tuần tự phản tư.');
+    return;
+  }
+
+  const rect = ruler.getBoundingClientRect();
+  const sliderRect = slider.getBoundingClientRect();
+  // centerY tính theo không gian NỘI BỘ của ruler (client space)
+  const y = slider.offsetTop + slider.offsetHeight/2;
+
+  const v = yToValue(y);
+
+  // ---------- HIỆN ĐIỂM TỨC THỜI (show instant score) ----------
+  let inst = document.getElementById('instantScore');
+  if(!inst){
+    inst = document.createElement('div');
+    inst.id = 'instantScore';
+    inst.style.position = 'absolute';
+    inst.style.display = 'none';
+    inst.style.fontWeight = '700';
+    inst.style.fontSize = '16px';
+    inst.style.lineHeight = '1';
+    inst.style.padding = '4px 8px';
+    inst.style.borderRadius = '6px';
+    inst.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+    inst.style.background = 'rgba(255,255,255,0.98)';
+    inst.style.pointerEvents = 'none';
+    inst.style.zIndex = '9999';
+    inst.style.transition = 'opacity 0.25s ease';
+    inst.style.color = '#004080';
+    document.body.appendChild(inst);
+  }
+
+  // Lấy bounding rect chính xác của #totalScore.
+  // Nếu #totalScore đang display:none -> tạm set display:block + visibility:hidden để đo rồi phục hồi.
+  const totalBox = document.getElementById('totalScore');
+  let targetRect;
+  if (totalBox) {
+    const cs = window.getComputedStyle(totalBox);
+    let restored = false;
+    const prevDisplay = totalBox.style.display; // lưu giá trị inline trước
+    if (cs.display === 'none') {
+      // tạm hiện nhưng ẩn mắt bằng visibility để không gây flicker
+      totalBox.style.display = 'block';
+      totalBox.style.visibility = 'hidden';
+      restored = true;
+    }
+    targetRect = totalBox.getBoundingClientRect();
+    if (restored) {
+      // phục hồi trạng thái cũ
+      totalBox.style.display = prevDisplay || 'none';
+      totalBox.style.visibility = '';
+    }
+  } else {
+    // fallback: dùng .status nếu không tìm thấy #totalScore
+    const statusEl = document.querySelector('.status') || document.body;
+    targetRect = statusEl.getBoundingClientRect();
+  }
+
+  // Nội dung + hiển thị
+  inst.textContent = (v > 0 ? '+' : '') + v + ((v >= 4000) ? " 😇" :(v<=-4000)? " 😈":" 👤") ;
+  if (inst._hideTimeout) { clearTimeout(inst._hideTimeout); inst._hideTimeout = null; }
+  inst.style.opacity = '1';
+  inst.style.display = 'block';
+
+  // Đặt vị trí sau một frame để inst.offsetWidth/offsetHeight có giá trị chính xác
+  requestAnimationFrame(() => {
+    const instW = inst.offsetWidth;
+    const instH = inst.offsetHeight;
+
+    const left = Math.round(targetRect.left + window.scrollX + Math.max(0, (targetRect.width - instW) / 2));
+    const top  = Math.round(targetRect.top  + window.scrollY + Math.max(0, (targetRect.height - instH) / 2));
+
+    inst.style.left = left + 'px';
+    inst.style.top  = top  + 'px';
+  });
+
+  // Ẩn sau 700ms với fade
+  inst._hideTimeout = setTimeout(()=> {
+    inst.style.opacity = '0';
+    setTimeout(()=> {
+      inst.style.display = 'none';
+      inst.style.opacity = '1'; // reset cho lần sau
+    }, 250);
+    inst._hideTimeout = null;
+  }, 700);
+  // ---------- KẾT THÚC PHẦN HIỂN THỊ ĐIỂM TỨC THỜI ----------
+
+  // Giữ nguyên logic lưu điểm
+  state.entries.push({ts:Date.now(),value:v});
+  state.total += v;
+
+  flashWhite();
+  playBeep();
+  slider.style.transition='top 0.25s ease';
+  setTimeout(()=>slider.style.transition='',300);
+}
+
+function flashWhite() {
+  LED.classList.remove('red','amber','green','pulse');
+  LED.style.transition = 'none';
+  LED.style.background = '#ffffff';
+
+  // bật sáng
+  LED.style.opacity = '1';
+
+  // tắt nhanh sau 120ms
+  setTimeout(() => {
+    LED.style.transition = 'opacity 0.15s';
+    LED.style.opacity = '0.2';
+  }, 120);
+
+  // tắt hoàn toàn sau 250ms (trở về trạng thái cũ)
+  setTimeout(() => {
+    LED_clear();
+    LED.style.opacity = '1'; 
+  }, 250);
+}
+// Countdown
+function updateCountdown() {
+  if (state.status !== 'running') {
+    countdownEl.textContent = '--';
+    return;
+  }
+
+  const now = Date.now();
+  const rem = state.startTimestamp + MS_COUNTDOWN - now;
+
+  // Hết giờ → giữ nguyên logic cũ
+  if (rem <= 0) {
+    finishCycle();
+    return;
+  }
+
+  // --- Chuyển đổi rem (ms) thành ngày – giờ – phút – giây ---
+  let remaining = rem;
+
+  const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+  remaining %= 24 * 60 * 60 * 1000;
+
+  const hours = Math.floor(remaining / (60 * 60 * 1000));
+  remaining %= 60 * 60 * 1000;
+
+  const minutes = Math.floor(remaining / (60 * 1000));
+  const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+
+  // --- Giữ nguyên cách update DOM, chỉ đổi format text ---
+  countdownEl.textContent =
+    `${days} ngày ` +
+    `${String(hours).padStart(2, '0')}:` +
+    `${String(minutes).padStart(2, '0')}:` +
+    `${String(seconds).padStart(2, '0')}`;
+    saveCurrentCycle()
+}
+
+function finishCycle(){
+    console.log("[finishCycle] start - state before finish:", state);
+
+    // Set trạng thái finished
+    state.status = 'finished';
+
+    // Chuẩn bị âm thanh/LED như cũ
+    LED.classList.remove('red','amber','green','white');
+
+    const sndAmber = document.getElementById('sndAmber');
+    const sndRed   = document.getElementById('sndRed');
+    const sndGreen = document.getElementById('sndGreen');
+
+    if(state.total <= -4000){
+        LED.className = 'led red led-red-alert';
+        if (sndRed) { sndRed.currentTime = 0; sndRed.play(); }
+    } else if(state.total >= 4000){
+        LED.style.background='#f39c12';
+        LED.classList.add('pulse');
+        if (sndAmber) { sndAmber.currentTime = 0; sndAmber.play(); }
+    } else {
+        LED.style.background='#2ecc71';
+        LED.classList.remove('pulse');
+        if (sndGreen) { sndGreen.currentTime = 0; sndGreen.play(); }
+    }
+
+    totalEl.classList.remove('hidden');
+    totalEl.textContent = (state.total>0?'+':'')+state.total;
+
+    // Tạo bản ghi chu kỳ hoàn chỉnh
+    const finishedCycle = {
+        cycleId: Date.now(),
+        startTime: state.startTimestamp,
+        endTime: Date.now(),
+        totalScore: state.total,
+        entries: state.entries ? state.entries.slice() : []
+    };
+
+    // Đảm bảo luôn có mảng finishedCycles trong state
+    if(!Array.isArray(state.finishedCycles)) state.finishedCycles = loadFinishedCycles() || [];
+
+    // Push vào memory và lưu vĩnh viễn
+    state.finishedCycles.unshift(finishedCycle);
+    saveFinishedCycles(state.finishedCycles);
+
+    console.log("[finishCycle] saved finishedCycles length =", state.finishedCycles.length);
+
+    // Xóa chu kỳ hiện tại khỏi localStorage (đã back up vào history)
+    localStorage.removeItem(CURRENT_CYCLE_KEY);
+
+    // Optionally reset current-cycle in memory to idle (giữ history)
+    state.status = 'idle';
+    state.startTimestamp = null;
+    state.entries = [];
+    state.total = 0;
+    saveCurrentCycle();
+    document.getElementById('totalScore').style.display = 'block';
+    // Mở lại Nhật ký (nạp lại từ storage để chắc chắn nhất) sau 100ms
+   
+}
+
+// Start/reset
+function startCycle(){
+  state={status:'running', startTimestamp:Date.now(), entries:[], total:0};
+  LED_clear();
+  totalEl.textContent='0';
+  totalEl.classList.add('hidden');
+  placeSliderAtValue(0);
+}
+
+resetBtn.onclick = () => {
+
+  // ---- DỪNG NGAY TẤT CẢ ÂM THANH ----
+  const audios = ['sndAmber','sndRed','sndGreen'];
+  audios.forEach(id => {
+    const a = document.getElementById(id);
+    if (a) {
+      a.pause();
+      a.currentTime = 0;
+      // reload src để các trình duyệt chắc chắn dừng
+      a.src = a.src;
+    }
+  });
+  document.getElementById('totalScore').style.display = 'none';
+
+  // ---- RESET BÌNH THƯỜNG ----
+  startCycle();
+};
+
+const helpContent ='🎯 <strong>ĐỊNH NGHĨA BA TẦNG TÂM LÝ</strong>\n<strong>1) BẢN NĂNG (Id)</strong> 🔥 – TẦNG NĂNG LƯỢNG NGUYÊN THỦY - ĐÔI KHI LÀ ÁC QUỶ 👿!\nId là phần sâu nhất và nguyên thủy nhất của con người:\nChứa các nhu cầu sinh học: ăn, ngủ, sinh tồn 🍖😴\nChứa các cảm xúc thô: giận dữ, ham muốn, chiếm hữu 😡🔥\nKhông biết đúng – sai ⚖️\nKhông biết đạo đức hay pháp luật\nChỉ muốn thỏa mãn ngay lập tức ⏩\nHoạt động theo Nguyên tắc Khoái cảm 😋\nBản năng là động cơ thô, mạnh mẽ nhưng thiếu kiểm soát.\n→ Cần Bản ngã điều tiết và Siêu ngã định hướng.\n\n<strong>2) BẢN NGÃ (Ego)</strong> 🧠🦰👤\– CON NGƯỜI THỰC TẾ\nBản ngã hình thành để giúp con người thích nghi với thực tại:\n- Đánh giá hậu quả, cân nhắc trước khi làm 💡\n- Tìm cách thỏa mãn Bản năng mà không gây rắc rối\n- Nhận diện luật lệ, giới hạn, rủi ro 🌍\n- Lập kế hoạch – tổ chức – kiểm soát hành vi 📅🕹️\nBản ngã vận hành theo Nguyên tắc Hiện thực.\nBản ngã là bộ điều phối trung tâm:\n- Giảm bớt yêu cầu bốc đồng của Bản năng\n- Giảm sự khắt khe quá mức của Siêu ngã\n- Giữ cho cá nhân sống cân bằng – lý trí – thực tế\n\n<strong>3) SIÊU NGÃ (Superego)</strong> 🕊– HỆ THỐNG ĐẠO ĐỨC & LÝ TƯỞNG - THIÊN THẦN 😇\nSiêu ngã được tạo nên từ: giáo dục 📚, văn hóa – xã hội 🌏, sự hướng thiện – mong muốn trở nên tốt đẹp hơn 😇.\nNó vận hành theo Nguyên tắc Đạo đức/Lý tưởng:\n- Đặt ra tiêu chuẩn đúng – sai ⚖️\n- Tạo cảm giác tội lỗi khi làm sai 💔\n- Tạo cảm giác tự hào khi làm đúng 🌈\n- Luôn muốn đạt sự hoàn hảo 🏆\nSiêu ngã là người giám sát nội tâm:\n→ Khuyến khích điều tốt\n→ Ngăn hành vi sai\n→ Nhưng đôi khi khiến bạn nghiêm khắc quá mức với bản thân\n\n📏 <strong>3 NGUYÊN TẮC ĐỂ GẠT THƯỚC ĐÚNG</strong>\n1) ĐỘNG CƠ 🚀\nMục đích thật sự của bạn...?\nPhục vụ bản thân hay người khác...?\nXuất phát từ cảm xúc hay lý trí...?\n\n2) BẢN CHẤT KHÁCH QUAN 🧐\nTheo pháp luật – văn hóa – đạo đức - xã hội hiện tại, hành vi đó gây hại hay gây lợi...?\nHậu quả nặng hay nhẹ...?\n\n3) ĐỒNG CẢM 🤝\nNgười khác sẽ cảm thấy gì khi bạn làm như vậy?\nTác động nhất thời hay dài hạn...?\n➡️ Với mỗi nguyên tắc, nếu hành vi khuynh hướng bên nào thì gạt về bên đó một đoạn. Vị trí cuối cùng của thanh gạt = kết quả sau khi gạt dồn vượt qua 3 nguyên tắc.\n\n🧭 <strong>KHI NÀO NÊN DÙNG – KHI NÀO KHÔNG NÊN DÙNG</strong>\n✅ DÙNG KHI hành vi có: Cảm xúc, nhận thức, liên quan đạo đức, có lựa chọn, tác động đến người khác, có xung đột nội tâm, đấu tranh giữa bản năng - lý trí và đạo đức, có ý thức rõ ràng\nVí dụ: Quyết định nói thật hay nói dối, tha thứ hay trả đũa, chia sẻ hay giữ lợi ích cho mình, nói lời tử tế hay lời làm tổn thương…\n\n❌ KHÔNG DÙNG KHI:\n1) Phản xạ sinh học: giật mình, né vật, co tay khi nóng...\n2) Công việc kỹ thuật – logic thuần túy: giải toán, viết code, nghiên cứu khoa học\n3) Thói quen vô thức: đánh răng, tắm, lướt mạng xã hội theo phản xạ...\n4) Hành vi tập thể – xã hội học: nghi lễ tôn giáo, biểu tình, bầu cử, mặc đồng phục...\n5) Hành vi siêu thức / ngoài thời gian – không gian: thiền sâu, sáng tạo đến quên mình, giác ngộ, cận tử...\n6) Người mất khả năng tự chủ: loạn thần, hoang tưởng, say rượu ảo giác, động kinh...\n\n🔍 <strong>LỰA CHỌN GẠT TRƯỚC HAY SAU HÀNH VI</strong>\nGạt trước khi làm:\n→ Giúp bạn cân nhắc kỹ hậu quả\n→ Giảm hành vi bốc đồng\nGạt sau khi làm:\n→ Giúp bạn hiểu mình hơn\n→ Tăng khả năng tự đánh giá\n\n❓ <strong>NẾU KHÔNG XÁC ĐỊNH ĐƯỢC 1 NGUYÊN TẮC?</strong>\nVí dụ: Chưa rõ động cơ, không biết luật, không nghĩ được đến cảm xúc người khác...\n➡️ Không gạt nguyên tắc đó\nhoặc\n➡️ Nhẹ nhàng gạt về phía Bản năng (Id)\n(vì thiếu thông tin → dễ sai, có thể dẫn đến hậu quả xấu)\n\n🎚️ <strong>CÁCH THỨC GHI NHẬN XU HƯỚNG TÂM LÝ</strong>\nGạt về phía Bản năng (Id) → Điểm âm 💔\n→ Hành vi thiên về cảm xúc thô – thiếu cân nhắc\nGạt về phía Siêu ngã (Superego) → Điểm dương ❤️\n→ Hành vi thiên về đạo đức – chuẩn mực – trách nhiệm\nCàng sát hai cực → mức độ càng mạnh \n\n⚙️ <strong>CẤU HÌNH BAN ĐẦU (KHI RESET)</strong>\nThanh gạt đặt ở chính giữa → tượng trưng cho Ego – trạng thái cân bằng ⚖️\nTổng điểm = 0 🎯\nĐèn và âm thanh tắt 🔕\n\n🧠 <strong>XÁC NHẬN ĐIỂM</strong>\nKhi ấn xuống trên thanh gạt:\nHệ thống lưu lại điểm 🗃️\nĐèn sáng trắng 🤍\nPhát tiếng bíp nhẹ 🔊\n→ Báo hiệu: ghi điểm thành công 🎉\nSau khi gạt và tích điểm xong một lần, nhấn nút <b>Hồi vị</b> để đưa thanh gạt về vị trí gốc chính giữa ban đầu, chuẩn bị cho lần gạt tiếp theo.\n\n⏳ <strong>CHU KỲ PHẢN TƯ 168 GIỜ (7 NGÀY)</strong>\nSau khi xác nhận điểm đầu tiên → đồng hồ bắt đầu đếm 168 giờ\nTrong 7 ngày:\nGạt thước không giới hạn số lần\nMỗi lần nhấn → điểm cộng vào tổng điểm 📊\n\n📣 <strong>BÁO KẾT QUẢ SAU 168 GIỜ</strong>\n🟠 ≥ +4000 → Siêu ngã mạnh\nĐèn cam nhấp nháy 🟠\nÂm thanh cảnh báo ⚠️\n→ Quá đạo đức → dễ hy sinh bản thân quá mức\n🔴 ≤ –4000 → Bản năng mạnh\nĐèn đỏ nhấp nháy 🔴\nÂm thanh cảnh báo ⚠️\n→ Thiên về cảm xúc – bốc đồng – thiếu cân nhắc người khác\n🟢 –3999 đến +3999 → Cân bằng đôi bên\nĐèn xanh tĩnh 🟢\nÂm thanh chúc mừng 🎉\n→ Sống hài hòa giữa lợi ích bản thân & cộng đồng 🌈. Đây cũng chính là mục tiêu tối thượng, cao cả và nhân văn của cây thước khi đến với người dùng.\n\n📅➡️🧠 <strong>THEO DÕI LÂU DÀI</strong>\nNgười dùng có thể quan sát qua <strong>Nhật ký</strong>:\n- Mức độ ổn định cảm xúc\n- Sự thay đổi hành vi, tâm lý, nhân cách\n- Xu hướng nghiêng về bên nào nhiều hơn\n- Khả năng kiểm soát bản thân\n-> Đây là quá trình phát triển nhân cách bền vững.\n\n⚠️ <strong>CẢNH BÁO & LƯU Ý QUAN TRỌNG</strong>\n1. Không phải công cụ chẩn đoán y tế / tâm lý 🧪🚫\nThước được thiết kế dựa trên thuyết Phân tâm học - vốn mang tính triết học nhiều hơn khoa học hiện đại (chưa được kiểm chứng, thiếu cơ sở khoa học, mang tính chủ quan cao, thiếu tính phổ quát), chỉ đóng vai trò là công cụ giáo dục tự phản tư bản thân về những xung đột trong lợi ích, không phải thiết bị chẩn đoán chính xác tuyệt đối tâm lý con người.\nKhông dùng kết quả để thay thế chẩn đoán, tư vấn hay trị liệu chuyên môn (bác sĩ, nhà tâm lý, bác sĩ tâm thần).\nNếu bạn hoặc người thân có dấu hiệu nghiêm trọng (tự hại, ý định gây hại người khác, hoang tưởng, mất liên hệ với thực tại), ngay lập tức tìm trợ giúp chuyên nghiệp.\n\n2. Trung thực khi sử dụng — yếu tố then chốt 🔎🧭\nKết quả mang tính chủ quan cao, phụ thuộc hoàn toàn vào cách bạn kéo gạt và cách bạn tự đánh giá theo 3 nguyên tắc.\nTrung thực tuyệt đối với chính mình khi trả lời (động cơ, khách quan, đồng cảm) là điều cần thiết.\nNếu cố tình thao tác không thật (để "được điểm" hoặc để kiểm tra thiết bị), kết quả sẽ mất ý nghĩa và có thể dẫn đến hiểu sai về bản thân.\n\n3. Điểm số không bằng nhân cách con người 🫶\nMột hay nhiều lần điểm âm/dương không biến bạn thành “xấu” hay “thánh thiện”.\nĐiểm chỉ nói lên xu hướng một cách tương đối sau 7 ngày tổng kết, không đánh giá giá trị con người.\nHãy đọc điểm như chỉ số tham khảo — bắt đầu cuộc đối thoại với chính mình, không tự buộc tội.\n\n4. Không dùng thước để phán xét người khác hoặc làm bằng chứng pháp lý ⚖️✋\nTuyệt đối không dùng thước làm công cụ đánh giá, kết luận, xúc phạm hoặc xử lý người khác (gia đình, đồng nghiệp, học sinh…).\nKhông dùng kết quả làm bằng chứng trong các tranh chấp, tố tụng, quyết định tuyển chọn, sa thải, kỷ luật hoặc các vấn đề pháp lý.\n\n5. Tránh dùng trong trạng thái cảm xúc cực độ hoặc mất kiểm soát 🌀\nKhông dùng khi: say rượu, bị kích động mạnh, hoảng loạn, đang trong cơn khủng hoảng, mất ngủ nặng, dùng chất kích thích.\nNhững trạng thái này làm méo mó nhận thức → kết quả sai lệch, đôi khi gây hậu quả cảm xúc xấu cho bạn.\n\n6. Nhóm người không phù hợp hoặc cần thận trọng đặc biệt ⚠️\nNgười có rối loạn thần kinh nặng, rối loạn nhân cách nặng, rối loạn tâm thần, ảo giác, động kinh cần không dùng thước để tự đánh giá.\nTrẻ em dưới độ tuổi trưởng thành: chỉ dùng dưới sự giám sát và giải thích của người lớn/giáo viên/chuyên gia.\nNgười đang trong quá trình điều trị tâm lý/thuốc cần hỏi ý kiến chuyên gia trước khi dùng.\n\n7. Nguy cơ lệ thuộc & tự phán xét — dùng thước có trách nhiệm 🧭\nKhông nên dùng thước làm báo cáo giá trị bản thân hàng ngày; nếu lạm dụng sẽ tạo thói quen so sánh và lệ thuộc vào chỉ số.\nTránh chuyển việc “làm tốt/không tốt” thành áp lực: con người phát triển bằng tập luyện & bối cảnh, không phải chỉ số.\n\n8. Quyền riêng tư & dữ liệu cá nhân 🔐\nCần minh bạch về việc lưu trữ, ai có thể truy cập, thời gian lưu và xóa dữ liệu.\nKhông chia sẻ kết quả với người khác nếu bạn chưa sẵn sàng hoặc chưa thông báo rõ mục đích.\n\n9. Cách phản ứng khi kết quả cảnh báo (đỏ/cam) 🚨\nĐừng hoảng loạn — coi đó là tín hiệu để dừng, suy nghĩ và hành động có trách nhiệm.\nLàm ngay: dừng hành động, hít thở, ghi nhật ký ngắn, tìm người tin cậy để trò chuyện.\nNếu kết quả lặp lại liên tục và bạn cảm thấy khó kiểm soát hành vi → tìm chuyên gia tâm lý để được hỗ trợ.\n\n10. Lưu ý văn hóa & bối cảnh xã hội 🌐\nHành vi được đánh giá khác nhau theo văn hóa, luật pháp và bối cảnh.\nKhi di chuyển giữa nền văn hóa hoặc sống ở nước khác, không dùng thước như một tiêu chuẩn tuyệt đối mà cần tham khảo văn hoá/luật địa phương.\n\n11. Khi nào cần tìm giúp đỡ chuyên nghiệp ☎️\nBạn có xu hướng tự làm hại hoặc nghĩ người khác sẽ bị tổn thương.\nKết quả thước gây cảm xúc tiêu cực kéo dài (suy sụp, trầm cảm).\nMất khả năng làm việc, học tập hoặc duy trì các mối quan hệ vì hành vi.\n→ Liên hệ bác sĩ tâm thần / nhà trị liệu / đường dây nóng khẩn cấp.\n\n💬 <strong>LỜI NHẮC CUỐI</strong>\n> “Thước không dùng để phán xét – mà để phản tư.”\nHãy dùng nó như gương soi nội tâm để sống tỉnh thức hơn mỗi ngày.\n';
+
+helpBtn.onclick = () => {
+  document.getElementById('helpText').innerHTML = helpContent;
+  document.getElementById('helpModal').style.display = 'block';
+};
+
+
+document.getElementById('closeHelp').onclick = () => {
+  document.getElementById('helpModal').style.display = 'none';
+};
+
+initSlider();
+setInterval(updateCountdown,200);
+updateCountdown();
+
+
+function revertSlider() {
+  placeSliderAtValue(0);
+}
+document.getElementById('revBtn').onclick = revertSlider;
+function formatFullTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleString('vi-VN', { hour12: false }); 
+}
+
+function interpretLevel(v) {
+  if (v >= 4000) return "→ Siêu ngã 😇";
+  if (v <= -4000) return "→ Bản năng 😈";
+  return "→ Bản ngã 👤";
+}
+
+function formatDateTime(ts) {
+    const d = new Date(ts);
+    const date = d.toLocaleDateString('vi-VN');
+    const time = d.toLocaleTimeString('vi-VN', { hour12: false });
+    return { date, time };
+}
+
+function interpretScore(score) {
+    if (score >= 4000) return "Siêu ngã mạnh 😇";
+    if (score <= -4000) return "Bản năng mạnh 😈";
+    return "Bản ngã cân bằng ✅";
+}
+
+// Thêm chức năng XÓA LỊCH SỬ VĨNH VIỄN
+function clearHistory() {
+    if (confirm("Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử các chu kỳ đã hoàn thành? Hành động này không thể hoàn tác.")) {
+        state.finishedCycles = [];
+        saveFinishedCycles([]); // Xóa khỏi localStorage
+        showReview(); // Cập nhật lại màn hình Nhật ký
+        alert("Lịch sử chu kỳ đã được xóa vĩnh viễn.");
+    }
+}
+
+function showReview() {
+    // Tải lại lịch sử từ storage để đảm bảo luôn cập nhật
+    state.finishedCycles = loadFinishedCycles() || [];
+
+    const box = document.getElementById('reviewContent');
+    document.getElementById('reviewModal').style.display = 'block';
+
+    // Nếu đang chạy, show thông tin chu kỳ hiện tại lên đầu
+    let html = '';
+    if (state.status === 'running') {
+        html +=
+            "<h3>⏳ Chu kỳ hiện tại đang diễn ra</h3>" +
+            "<p>Chu kỳ hiện tại (bắt đầu từ " + (state.startTimestamp ? formatDateTime(state.startTimestamp).date : '—') + ") sẽ được lưu vào lịch sử khi đồng hồ đếm ngược kết thúc.</p>" +
+            "<p>Tổng điểm hiện tại: " + (state.total > 0 ? '+' : '') + state.total + "</p>";
+    }
+
+    // Nếu không có lịch sử nào
+    if (!state.finishedCycles || state.finishedCycles.length === 0) {
+        if (state.status !== 'running') {
+            html += "<h3>📜 Nhật ký Chu kỳ</h3><p>Không có chu kỳ nào đã hoàn thành được lưu.</p>";
+        }
+        box.innerHTML = html;
+        return;
+    }
+
+    // === Bảng tổng kết (oldest -> newest, Chu kỳ #1 = oldest) ===
+    html += "<h3>📜 Lịch sử các Chu kỳ đã Hoàn thành</h3>";
+    html += "<table border='1' style='width:100%; border-collapse:collapse; margin-top:12px; font-size:14px;'>";
+    html += "<thead><tr>" +
+            "<th style='padding:8px; background:#004080; color:#fff;'>Chu kỳ</th>" +
+            "<th style='padding:8px; background:#004080; color:#fff;'>Tổng Điểm</th>" +
+            "<th style='padding:8px; background:#004080; color:#fff;'>Khuynh Hướng</th>" +
+            "<th style='padding:8px; background:#004080; color:#fff;'>Thời gian Bắt đầu</th>" +
+            "<th style='padding:8px; background:#004080; color:#fff;'>Lần Gạt</th>" +
+            "</tr></thead><tbody>";
+
+    // state.finishedCycles[0] là mới nhất (do unshift). Duyệt từ end -> 0 để hiển thị oldest -> newest
+    for (let i = state.finishedCycles.length - 1; i >= 0; i--) {
+        const cycle = state.finishedCycles[i];
+        const start = formatDateTime(cycle.startTime);
+        const cycleNum = state.finishedCycles.length - i; // 1..n, 1 = oldest
+        const trend = interpretScore(cycle.totalScore);
+        const scoreStyle = cycle.totalScore > 3999 ? 'color:orange; font-weight:bold;' :
+                   cycle.totalScore < -3999 ? 'color:red; font-weight:bold;' :
+                   'color:green; font-weight:bold;';
+
+        html += `<tr>` +
+                `<td style='padding:6px; text-align:center;'>${cycleNum}</td>` +
+                `<td style='padding:6px; text-align:center; ${scoreStyle}'>${cycle.totalScore > 0 ? '+' : ''}${cycle.totalScore}</td>` +
+                `<td style='padding:6px;'>${trend}</td>` +
+                `<td style='padding:6px;'> ${start.time} ${start.date}</td>` +
+                `<td style='padding:6px; text-align:center;'>${Array.isArray(cycle.entries) ? cycle.entries.length : 0}</td>` +
+                `</tr>`;
+    }
+
+    html += "</tbody></table>";
+
+    // Nút xóa lịch sử
+    html += '<div style="margin-top:12px;"><button id="clearHistoryBtn" class="btn warn">Xóa toàn bộ Nhật ký</button></div>';
+
+    // Container cho các bảng chi tiết từng chu kỳ (sẽ chèn n bảng ở đây)
+    html += '<div id="cycleDetailsContainer" style="margin-top:18px;"></div>';
+
+    // Gán HTML tạm
+    box.innerHTML = html;
+
+    // Hook nút xóa
+    document.getElementById('clearHistoryBtn').onclick = clearHistory;
+
+    // === TẠO CÁC BẢNG CHI TIẾT ===
+    const detailsContainer = document.getElementById('cycleDetailsContainer');
+
+    // Duyệt lại theo cùng thứ tự (oldest -> newest)
+    for (let i = state.finishedCycles.length - 1; i >= 0; i--) {
+        const cycle = state.finishedCycles[i];
+        const cycleNum = state.finishedCycles.length - i; // Chu kỳ # theo same numbering
+        const startObj = formatDateTime(cycle.startTime);
+        const header = `<h4 style="margin-top:14px; margin-bottom:6px;">🔍 Chi tiết Chu kỳ ${cycleNum} — Bắt đầu: ${startObj.time} ${startObj.date} — Tổng: ${cycle.totalScore > 0 ? '+' : ''}${cycle.totalScore}</h4>`;
+
+        let t = `<div style="border:1px solid #e6eef8; padding:8px; border-radius:8px; margin-bottom:12px;">`;
+        t += header;
+        t += `<table border='1' style='width:100%; border-collapse:collapse; font-size:13px;'>`;
+        t += `<thead><tr>
+                <th style='padding:6px; background:#f0f6fb;'>Gạt</th>
+                <th style='padding:6px; background:#f0f6fb;'>Điểm</th>
+                <th style='padding:6px; background:#f0f6fb;'>Khuynh Hướng</th>
+                <th style='padding:6px; background:#f0f6fb;'>Giờ</th>
+                <th style='padding:6px; background:#f0f6fb;'>Ngày</th>
+               </tr></thead><tbody>`;
+
+        const entries = Array.isArray(cycle.entries) ? cycle.entries : [];
+        if (entries.length === 0) {
+            t += `<tr><td colspan="5" style="padding:8px; text-align:center; color:#666">Không có lần gạt nào được lưu trong chu kỳ này.</td></tr>`;
+        } else {
+            // Hiển thị entries theo thứ tự lưu (thường là chronological order). Nếu muốn đảo, có thể đổi loop.
+            for (let j = 0; j < entries.length; j++) {
+                const e = entries[j];
+                const val = (typeof e.value === 'number') ? e.value : (e.value ? Number(e.value) : 0);
+                const signVal = (val > 0 ? '+' : '') + val;
+                const dir = e.dir || (val > 3999 ? 'Siêu Ngã 🕊' : val < -3999 ? 'Bản Năng 😋' : 'Bản Ngã 👤');
+
+                let timeStr = '', dateStr = '';
+                if (e.time && e.date) {
+                    timeStr = e.time; dateStr = e.date;
+                } else if (e.ts) {
+                    const ft = formatDateTime(e.ts);
+                    timeStr = ft.time; dateStr = ft.date;
+                } else {
+                    const ft = formatDateTime(Date.now());
+                    timeStr = ft.time; dateStr = ft.date;
+                }
+
+                t += `<tr>
+                        <td style='padding:6px; text-align:center;'>${j+1}</td>
+                        <td style='padding:6px; text-align:center;'>${signVal}</td>
+                        <td style='padding:6px; text-align:center;'>${dir}</td>
+                        <td style='padding:6px; text-align:center;'>${timeStr}</td>
+                        <td style='padding:6px; text-align:center;'>${dateStr}</td>
+                      </tr>`;
+            }
+        }
+
+        t += `</tbody></table></div>`;
+
+        detailsContainer.insertAdjacentHTML('beforeend', t);
+    }
+}
+
+
+
+document.getElementById('closeReview').onclick = () => {
+  document.getElementById('reviewModal').style.display = 'none';
+};
+
+document.getElementById('reviewBtn').onclick = showReview;
+// Âm click nút
+const btnClickSound = new Audio("click.mp3");
+btnClickSound.volume = 0.35; // chỉnh độ lớn tại đây
+
+function playBtnSound() {
+    // reset về đầu, tránh bị delay
+    btnClickSound.currentTime = 0;
+    btnClickSound.play().catch(()=>{});
+}
+// HÀM MỞ KHÓA ÂM THANH CHO THIẾT BỊ DI ĐỘNG
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (audioUnlocked) return;
+    
+    // Danh sách tất cả các đối tượng Audio
+    const audios = [
+        document.getElementById('sndAmber'),
+        document.getElementById('sndRed'),
+        document.getElementById('sndGreen'),
+        btnClickSound // đối tượng đã được khai báo
+    ];
+
+    // Cố gắng phát và dừng ngay lập tức tất cả các âm thanh
+    audios.forEach(audio => {
+        if (audio) {
+            // Dùng play().catch() để tránh lỗi Uncaught Promise
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }).catch(() => {});
+        }
+    });
+
+    audioUnlocked = true;
+    
+    // Xóa listener sau khi đã mở khóa thành công
+    document.removeEventListener('touchstart', unlockAudio);
+    document.removeEventListener('click', unlockAudio);
+}
+
+// Gắn sự kiện mở khóa vào tương tác đầu tiên của người dùng
+document.addEventListener('touchstart', unlockAudio, {once: true});
+document.addEventListener('click', unlockAudio, {once: true});
+// Gắn vào tất cả các nút
+document.addEventListener("DOMContentLoaded", () => {
+    const btns = [
+        document.getElementById("resetBtn"),
+        document.getElementById("revBtn"),
+        document.getElementById("helpBtn"),
+        document.getElementById("reviewBtn"),
+        document.getElementById("closeHelp"),
+        document.getElementById("closeReview"),
+        document.getElementById("clearHistoryBtn")
+    ];
+
+    btns.forEach(btn => {
+        if (btn) {
+            btn.addEventListener("click", playBtnSound);
+        }
+    });
+});
+
+</script>
+<audio id="sndAmber" src="alert-amber.mp3" preload="auto"></audio>
+<audio id="sndRed"   src="alert-red.mp3" preload="auto"></audio>
+<audio id="sndGreen" src="success.mp3" preload="auto"></audio>
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+    .then(() => console.log("SW registered"))
+    .catch(err => console.error("SW failed", err));
+}
+</script>
+
+</script>
+
+</body>
+</html> 

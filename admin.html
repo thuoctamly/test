@@ -8,130 +8,210 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <style>
-        /* --- COPY LẠI CSS TỪ INDEX.HTML ĐỂ GIỮ NGUYÊN GIAO DIỆN ĐẸP --- */
+        /* ================================================================= */
+        /* 1. CSS GỐC TỪ INDEX.HTML (ĐỂ ĐẢM BẢO GIAO DIỆN GIỐNG 100%)      */
+        /* ================================================================= */
         :root{ --bg:#f4f7fb; --ruler-bg:#0b63a8; }
-        body { font-family: system-ui,Segoe UI,Roboto,sans-serif; margin:0; padding:20px; background: #f0f2f5; }
+        body { font-family: system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:0; padding:0; background: #f0f2f5; height: 100vh; overflow: hidden; }
         
-        /* Layout chia đôi: Trái là danh sách User, Phải là Nhật ký chi tiết */
-        .admin-container { display: flex; gap: 20px; height: 95vh; }
-        .user-list { 
-            flex: 0 0 300px; background: white; border-radius: 12px; 
-            padding: 15px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-        }
-        .user-detail { 
-            flex: 1; background: white; border-radius: 12px; 
-            padding: 20px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-            position: relative;
-        }
-
-        /* Thẻ User bên trái */
-        .user-card {
-            padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;
-            transition: 0.2s; border-radius: 6px;
-        }
-        .user-card:hover { background: #e3f2fd; }
-        .user-card.active { background: #bbdefb; border-left: 4px solid #0d47a1; }
-        .status-dot { height: 10px; width: 10px; background-color: #bbb; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .online { background-color: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
-        
-        /* --- CSS CHO NHẬT KÝ (COPY TỪ CODE CŨ) --- */
-        .cycle-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; border: 1px solid #e1e4e8; overflow: hidden; }
+        /* CSS CHO BẢNG & CARD NHẬT KÝ */
+        .cycle-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; border: 1px solid #e1e4e8; }
         .card-header { padding: 12px 16px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .log-container { max-height: 220px; overflow-y: auto; border-bottom: 1px solid #eee; background: #ffffff; }
         .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .log-table th { background: #004080; color: white; padding: 8px; text-align: left; }
-        .log-table td { padding: 8px; border-bottom: 1px solid #f1f1f1; }
+        .log-table th { position: sticky; top: 0; background: #004080; color: white; padding: 8px; font-weight: 500; text-align: left; }
+        .log-table td { padding: 8px; border-bottom: 1px solid #f1f1f1; color: #333; }
+        .log-table tr:nth-child(even) { background-color: #fcfcfc; }
         
-        /* Màu sắc */
-        .color-purple .card-header strong { color: #8e44ad !important; }
+        /* MÀU SẮC THEO KHUYNH HƯỚNG */
         .color-purple .log-table th { background: #8e44ad; }
+        .color-purple .card-header strong { color: #8e44ad !important; }
         
-        .color-red .card-header strong { color: #e74c3c !important; }
         .color-red .log-table th { background: #e74c3c; }
+        .color-red .card-header strong { color: #e74c3c !important; }
         
-        .color-green .card-header strong { color: #2ecc71 !important; }
         .color-green .log-table th { background: #2ecc71; }
+        .color-green .card-header strong { color: #2ecc71 !important; }
         
-        .color-blue .card-header strong { color: #2980b9 !important; }
         .color-blue .log-table th { background: #2980b9; }
+        .color-blue .card-header strong { color: #2980b9 !important; }
         
+        .color-amber .log-table th { background: #FFD700; color: #333; }
         .color-amber .card-header strong { color: #FFD700 !important; }
-        .color-amber .log-table th { background: #FFD700; color:#333; }
 
-        .saved-data { background: #eef9f0; padding: 12px; color: #333; font-size: 14px; }
-        .saved-label { font-weight: bold; color: #155724; display: block; margin-top: 6px; }
+        /* PHẦN HIỂN THỊ DỮ LIỆU ĐÃ LƯU */
+        .feedback-area { padding: 16px; background-color: #fdfdfd; }
+        .saved-data { background: #eef9f0; border: 1px solid #c3e6cb; padding: 12px; border-radius: 8px; color: #333; }
+        .saved-item { margin-bottom: 8px; font-size: 14px; }
+        .saved-label { font-weight: bold; color: #155724; display: block; }
+        .emoji-result { font-weight: bold; color: #004080; }
+
+        /* ================================================================= */
+        /* 2. CSS RIÊNG CHO LAYOUT ADMIN                                     */
+        /* ================================================================= */
+        .admin-layout { display: flex; height: 100%; }
+        
+        /* SIDEBAR (DANH SÁCH USER) */
+        .sidebar { 
+            width: 320px; background: white; border-right: 1px solid #ddd; 
+            display: flex; flex-direction: column; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05); z-index: 10;
+        }
+        .sidebar-header { padding: 15px; border-bottom: 1px solid #eee; background: #fafafa; }
+        .user-list { flex: 1; overflow-y: auto; padding: 10px; }
+        
+        .user-card {
+            padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.2s; background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .user-card:hover { background: #f0f8ff; border-color: #b3e5fc; }
+        .user-card.active { background: #e3f2fd; border-left: 4px solid #0d47a1; border-color: #bbdefb; }
+        
+        .status-badge { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .online { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
+        .offline { background: #ccc; }
+
+        /* MAIN CONTENT (CHI TIẾT NHẬT KÝ) */
+        .main-content { flex: 1; overflow-y: auto; padding: 25px; background: #f4f7fb; position: relative; }
+        .empty-state {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; color: #888;
+        }
+        .profile-header {
+            background: #fff; padding: 15px 20px; border-radius: 8px; 
+            margin-bottom: 20px; border-left: 5px solid #004080;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Scrollbar đẹp */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #999; }
     </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <div class="user-list">
-        <h3 style="color:#004080; border-bottom: 2px solid #eee; padding-bottom: 10px;">👥 Danh sách (<span id="userCount">0</span>)</h3>
-        <div id="usersContainer">Đang tải dữ liệu...</div>
+<div class="admin-layout">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3 style="margin:0; color:#004080;">🛡️ Freud Admin</h3>
+            <small style="color:#666;">Danh sách người dùng (<span id="userCount">0</span>)</small>
+        </div>
+        <div class="user-list" id="usersContainer">
+            <div style="text-align:center; padding:20px; color:#666;">Đang tải dữ liệu...</div>
+        </div>
     </div>
 
-    <div class="user-detail" id="detailContainer">
-        <div style="text-align:center; color:#888; margin-top: 100px;">
-            <h2>👈 Chọn một người dùng bên trái để xem Nhật ký</h2>
-            <p>Dữ liệu sẽ hiển thị y hệt giao diện người dùng.</p>
+    <div class="main-content" id="detailContainer">
+        <div class="empty-state">
+            <h1 style="font-size: 50px; margin-bottom: 10px;">👈</h1>
+            <h3>Chọn người dùng để xem Nhật ký</h3>
+            <p>Dữ liệu hiển thị đồng bộ 100% với giao diện người dùng.</p>
         </div>
     </div>
 </div>
 
 <script>
-   // --- 1. CẤU HÌNH FIREBASE ---
-const firebaseConfig = { 
-  apiKey : "AIzaSyBvSBloHwRCvWNzt37ThhxuPqVqgQfohlo" , 
-  authDomain : "freudruler.firebaseapp.com" , 
-  databaseURL : "https://freudruler-default-rtdb.asia-southeast1.firebasedatabase.app" , 
-  projectId : "freudruler" , 
-  storageBucket : "freudruler.firebasestorage.app" , 
-  messagingSenderId : "907969291678" , 
-  appId : "1:907969291678:web:e0e99eb6550a31bd42a28f" , 
-  measurementId : "G-69JD3RTJQH" 
-};
+    // --- 1. CẤU HÌNH FIREBASE (ĐÃ FIX SẴN) ---
+    const firebaseConfig = { 
+        apiKey : "AIzaSyBvSBloHwRCvWNzt37ThhxuPqVqgQfohlo" , 
+        authDomain : "freudruler.firebaseapp.com" , 
+        databaseURL : "https://freudruler-default-rtdb.asia-southeast1.firebasedatabase.app" , 
+        projectId : "freudruler" , 
+        storageBucket : "freudruler.firebasestorage.app" , 
+        messagingSenderId : "907969291678" , 
+        appId : "1:907969291678:web:e0e99eb6550a31bd42a28f" , 
+        measurementId : "G-69JD3RTJQH" 
+    };
+
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
 
-    // --- 2. LOGIC LẤY DỮ LIỆU ---
+    // --- 2. CÁC HÀM TIỆN ÍCH (HELPER) TỪ INDEX.HTML ---
+    // Helper: Format thời gian
+    function formatDateTime(ts) {
+        if (!ts) return { date: '--', time: '--' };
+        const d = new Date(ts);
+        const date = d.toLocaleDateString('vi-VN');
+        const time = d.toLocaleTimeString('vi-VN', { hour12: false });
+        return { date, time };
+    }
+
+    // Helper: Lấy thông tin màu sắc/label từ điểm số (Logic cốt lõi)
+    function getCategoryFromValue(v) {
+        const n = Number(v || 0);
+        if (n <= -6667) return { key: 'bn_manh', label: 'Bản năng mạnh', emoji: '😈', color: '#8e44ad', cls: 'color-purple' };
+        if (n <= -3334) return { key: 'bn_vua',  label: 'Bản năng vừa',  emoji: '🔥', color: '#e74c3c', cls: 'color-red' };
+        if (n >= 6667)  return { key: 'sn_manh', label: 'Siêu ngã mạnh',  emoji: '😇', color: '#FFD700', cls: 'color-amber' };
+        if (n >= 3334)  return { key: 'sn_vua',  label: 'Siêu ngã vừa',   emoji: '🕊️', color: '#2980b9', cls: 'color-blue' };
+        return { key: 'ego', label: 'Bản ngã', emoji: '👤', color: '#2ecc71', cls: 'color-green' };
+    }
+
+    // Helper: Render Sao tĩnh
+    function renderStarStatic(val) {
+        let s = "";
+        for(let i=1; i<=5; i++) s += (i<=val ? "★" : "☆");
+        return `<span style="color:#f1c40f; font-size:16px;">${s}</span> <small>(${val}/5)</small>`;
+    }
+
+    // Helper: Render Emoji kết quả
+    const EMOJI_SCALE = ['😡', '☹️', '😐', '🙂', '😍'];
+    const EMOJI_LABELS = ['Rất không hài lòng', 'Không hài lòng', 'Bình thường', 'Hài lòng', 'Rất hài lòng'];
+    function renderEmojiResult(val) {
+        if (!val || val < 1) return "Chưa đánh giá";
+        const icon = EMOJI_SCALE[val - 1];
+        const text = EMOJI_LABELS[val - 1];
+        return `<span class="emoji-result">${icon} ${text}</span>`;
+    }
+
+    // --- 3. LOGIC HIỂN THỊ DANH SÁCH USER ---
     const usersContainer = document.getElementById('usersContainer');
-    const detailContainer = document.getElementById('detailContainer');
     const userCountEl = document.getElementById('userCount');
 
-    // Lắng nghe dữ liệu realtime
     db.ref('users').on('value', (snapshot) => {
         const users = snapshot.val();
-        renderUserList(users);
+        renderSidebar(users);
     });
 
-    function renderUserList(users) {
+    function renderSidebar(users) {
         if (!users) {
-            usersContainer.innerHTML = "Chưa có dữ liệu.";
+            usersContainer.innerHTML = '<div style="text-align:center; padding:20px;">Không có dữ liệu</div>';
+            userCountEl.innerText = '0';
             return;
         }
 
         let html = '';
         let count = 0;
         
-        // Chuyển object thành mảng để dễ xử lý
-        Object.keys(users).forEach(userId => {
+        // Sắp xếp: Online lên đầu
+        const sortedKeys = Object.keys(users).sort((a,b) => {
+            const statA = users[a].currentStatus === 'online' ? 1 : 0;
+            const statB = users[b].currentStatus === 'online' ? 1 : 0;
+            return statB - statA;
+        });
+
+        sortedKeys.forEach(userId => {
             const u = users[userId];
             const profile = u.profile || {};
             const isOnline = u.currentStatus === 'online';
+            const lastActive = u.lastActive ? formatDateTime(u.lastActive).time + ' ' + formatDateTime(u.lastActive).date : '--';
             count++;
 
             html += `
                 <div class="user-card" onclick="loadUserDetail('${userId}')" id="card-${userId}">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong>${profile.fullName || userId}</strong>
-                        <span class="status-dot ${isOnline ? 'online' : ''}"></span>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="color:#333; font-size:15px;">${profile.fullName || userId}</strong>
+                        <span class="status-badge ${isOnline ? 'online' : 'offline'}"></span>
                     </div>
-                    <div style="font-size:12px; color:#666;">
-                        Lớp: ${profile.className || '--'} | Năm sinh: ${profile.birthYear || '--'}
+                    <div style="font-size:12px; color:#666; margin: 4px 0;">
+                        Lớp: <b>${profile.className || '--'}</b> | NS: ${profile.birthYear || '--'}
                     </div>
-                    <div style="font-size:11px; color:#888; margin-top:4px;">
-                        ${isOnline ? '<b style="color:green">Đang truy cập</b>' : 'Offline'}
+                    <div style="font-size:11px; color:#888;">
+                        ${isOnline ? '<b style="color:#2ecc71">Đang Online</b>' : 'Hoạt động cuối: ' + lastActive}
                     </div>
                 </div>
             `;
@@ -141,143 +221,88 @@ const firebaseConfig = {
         userCountEl.innerText = count;
     }
 
-    // --- 3. LOGIC HIỂN THỊ CHI TIẾT (RENDER GIAO DIỆN NHẬT KÝ) ---
+    // --- 4. LOGIC HIỂN THỊ CHI TIẾT (ĐỒNG BỘ 100% VỚI CLIENT) ---
     window.loadUserDetail = function(userId) {
-        // Highlight thẻ được chọn
+        // Highlight active
         document.querySelectorAll('.user-card').forEach(c => c.classList.remove('active'));
         const card = document.getElementById(`card-${userId}`);
         if(card) card.classList.add('active');
 
-        // Lấy dữ liệu user đó
+        // Fetch data
         db.ref('users/' + userId).once('value').then(snap => {
             const data = snap.val();
-            renderDiaryInterface(data);
+            renderMainContent(data);
         });
     };
 
-    function renderDiaryInterface(data) {
-        if (!data || !data.history) {
-            detailContainer.innerHTML = "<h3>📭 Người dùng này chưa có Nhật ký nào được lưu.</h3>";
-            return;
-        }
+    function renderMainContent(data) {
+        const container = document.getElementById('detailContainer');
+        
+        if (!data) { container.innerHTML = "Không tải được dữ liệu."; return; }
 
         const profile = data.profile || {};
         const history = data.history || [];
+        const current = data.currentCycle || {};
 
         let html = `
-            <h2 style="color:#004080; border-bottom:1px solid #ccc; padding-bottom:10px;">
-                Hồ sơ: ${profile.fullName} (${profile.className})
-            </h2>
+            <div class="profile-header">
+                <div>
+                    <h2 style="margin:0; color:#004080;">${profile.fullName || 'Không tên'}</h2>
+                    <span style="color:#666; font-size:14px;">Lớp: ${profile.className} | Năm sinh: ${profile.birthYear}</span>
+                </div>
+                <div style="text-align:right;">
+                     <div style="font-size:12px; color:#888;">Tổng số chu kỳ hoàn thành</div>
+                     <div style="font-size:24px; font-weight:bold; color:#004080;">${history.length}</div>
+                </div>
+            </div>
         `;
 
-        // === PHẦN TÁI TẠO GIAO DIỆN NHẬT KÝ (LOGIC CỐT LÕI) ===
-        // Copy logic render từ hàm showReview cũ sang đây
-        
-        const cardHtmlList = history.map((cycle, realIndex) => {
+        if (history.length === 0) {
+            html += `<div style="text-align:center; padding: 40px; color:#666; background:#fff; border-radius:12px;">
+                        <h3>📭 Người dùng này chưa hoàn thành chu kỳ nào.</h3>
+                     </div>`;
+            container.innerHTML = html;
+            return;
+        }
+
+        // --- A. BẢNG TỔNG KẾT (SUMMARY TABLE) - COPY TỪ INDEX.HTML ---
+        html += `
+            <h4 style="color:#4a148c; margin:0 0 10px 0; font-size: 16px; font-weight: 700; text-transform: uppercase; border-left: 4px solid #7b1fa2; padding-left: 10px;">📓 TỔNG KẾT LỊCH SỬ</h4>
+            <div style="overflow-x:auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #ffffff; border: 1px solid #e1bee7; margin-bottom: 25px; border-radius: 8px;">
+            <table style="width:100%; min-width:600px; border-collapse:collapse; font-family: sans-serif;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #4a148c 0%, #7b1fa2 100%); color:#ffffff;">
+                        <th style="padding:12px; text-align:center;">Chu kỳ</th>
+                        <th style="padding:12px; text-align:center;">Điểm TB</th>
+                        <th style="padding:12px; text-align:center;">Khuynh hướng</th>
+                        <th style="padding:12px; text-align:center;">Tổng điểm</th>
+                        <th style="padding:12px; text-align:center;">Số lần gạt</th>
+                        <th style="padding:12px; text-align:center;">Thời gian</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        const tableRows = history.map((cycle, realIndex) => {
             const cycleNum = history.length - realIndex;
+            const avgScore = cycle.avgScore;
+            const totalScore = cycle.totalScore || (cycle.entries ? cycle.entries.reduce((a,b)=>a+(Number(b.value)||0),0) : 0);
             const startObj = formatDateTime(cycle.startTime);
-            const fb = cycle.feedback || {};
+            const info = getCategoryFromValue(avgScore);
 
-            // Logic màu sắc
-            const v = cycle.avgScore;
-            let scoreClass = 'color-green';
-            let iconTrend = '👤';
-            if (v <= -6667) { scoreClass = 'color-purple'; iconTrend = '😈'; }
-            else if (v <= -3334) { scoreClass = 'color-red'; iconTrend = '🔥'; }
-            else if (v >= 6667) { scoreClass = 'color-amber'; iconTrend = '😇'; }
-            else if (v >= 3334) { scoreClass = 'color-blue'; iconTrend = '🕊️'; }
-
-            let card = `<div class="cycle-card ${scoreClass}">`;
-            
-            // Header
-            card += `<div class="card-header">
-                <div class="header-left">
-                    <strong>Chu kỳ ${cycleNum}</strong> 
-                    <span style="font-size:13px; color:#333;">(từ ${startObj.time} ${startObj.date})</span>
-                </div>
-                <div class="header-right" style="font-weight:bold; color: inherit;">
-                    ${iconTrend} ${v > 0 ? '+' : ''}${v.toFixed(1)}
-                </div>
-            </div>`;
-
-            // Table Logs
-            card += `<div class="log-container"><table class="log-table">
-                        <thead><tr><th>Thời gian</th><th>Điểm</th><th>Khuynh hướng</th></tr></thead>
-                        <tbody>`;
-            
-            const entries = cycle.entries || [];
-            if(entries.length === 0) {
-                card += `<tr><td colspan="3" align="center">Không có dữ liệu gạt</td></tr>`;
-            } else {
-                entries.forEach(e => {
-                   const val = Number(e.value||0);
-                   let pColor = '#2ecc71';
-                   let emoji = '👤'; let label = 'Bản ngã';
-                   // Logic phân loại nhanh
-                   if (val <= -6667) { pColor='#8e44ad'; emoji='😈'; label='Bản năng mạnh';}
-                   else if (val <= -3334) { pColor='#e74c3c'; emoji='🔥'; label='Bản năng vừa';}
-                   else if (val >= 6667) { pColor='#FFD700'; emoji='😇'; label='Siêu ngã mạnh';}
-                   else if (val >= 3334) { pColor='#2980b9'; emoji='🕊️'; label='Siêu ngã vừa';}
-
-                   const tStr = e.time || '';
-                   card += `<tr>
-                        <td>${tStr}</td>
-                        <td style="font-weight:bold; color:${pColor}">${val>0?'+':''}${val}</td>
-                        <td>${emoji} ${label}</td>
-                    </tr>`;
-                });
-            }
-            card += `</tbody></table></div>`;
-
-            // Phần Phản tư (Đã lưu)
-            if (fb.q1) {
-                card += `<div class="saved-data">
-                    <div style="margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:5px;">✅ <b>Dữ liệu Phản tư & KHKT</b></div>
-                    <div class="saved-item"><span class="saved-label">📝 Sự kiện:</span> ${fb.q1}</div>
-                    <div class="saved-item"><span class="saved-label">⚔️ Xung đột:</span> ${fb.q2}</div>
-                    <div class="saved-item"><span class="saved-label">💡 Bài học:</span> ${fb.q3}</div>
-                    <hr style="border-top:1px dashed #abc; margin:10px 0;">
-                    <div class="saved-item">⭐ Dễ dùng: ${renderStars(fb.r1)}</div>
-                    <div class="saved-item">⭐ Hiểu bản thân: ${renderStars(fb.r2)}</div>
-                    <div class="saved-item">⭐ Thay đổi hành vi: ${renderStars(fb.r3)}</div>
-                    <div style="margin-top:5px;">
-                        <div>😊 Hài lòng kết quả: ${renderEmoji(fb.satResult)}</div>
-                        <div>📏 Hài lòng thước: ${renderEmoji(fb.satTool)}</div>
-                    </div>
-                </div>`;
-            } else {
-                card += `<div style="padding:15px; color:#999; text-align:center;">User chưa điền Nhật ký cho chu kỳ này.</div>`;
-            }
-            
-            card += `</div>`; // End card
-            return card;
+            return `
+                <tr style="background-color:${cycleNum % 2 === 0 ? '#f9f9f9' : '#ffffff'}; border-bottom:1px solid #eee;">
+                    <td style="padding:8px; text-align:center; font-weight:bold;">${cycleNum}</td>
+                    <td style="padding:8px; text-align:center; font-weight:bold; color:${info.color};">
+                        ${avgScore > 0 ? '+' : ''}${avgScore.toFixed(1)}
+                    </td>
+                    <td style="padding:8px; text-align:center; font-weight: bold; color:${info.color};">
+                        ${info.emoji} ${info.label}
+                    </td>
+                    <td style="padding:8px; text-align:center;">${totalScore > 0 ? '+' : ''}${totalScore}</td>
+                    <td style="padding:8px; text-align:center;">${cycle.entries ? cycle.entries.length : 0}</td>
+                    <td style="padding:8px; text-align:center; font-size:12px;">${startObj.time} ${startObj.date}</td>
+                </tr>
+            `;
         });
-
-        html += cardHtmlList.reverse().join('');
-        detailContainer.innerHTML = html;
-    }
-
-    // --- CÁC HÀM PHỤ TRỢ (HELPER) ---
-    function formatDateTime(ts) {
-        if(!ts) return {date:'--', time:'--'};
-        const d = new Date(ts);
-        return { 
-            date: d.toLocaleDateString('vi-VN'), 
-            time: d.toLocaleTimeString('vi-VN', { hour12: false }) 
-        };
-    }
-    function renderStars(val) {
-        let s = "";
-        for(let i=1; i<=5; i++) s += (i<=val ? "★" : "☆");
-        return `<span style="color:#f1c40f;">${s}</span>`;
-    }
-    function renderEmoji(val) {
-        const EMOJIS = ['😡', '☹️', '😐', '🙂', '😍'];
-        if(!val || val<1) return "--";
-        return EMOJIS[val-1];
-    }
-</script>
-
-</body>
-
-</html>
+        html

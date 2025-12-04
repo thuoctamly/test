@@ -327,4 +327,66 @@
                     <strong>Chu kỳ ${cycleNum}</strong> <span style="font-size:13px; color:#555;"><span class="neutral-text">(từ ${startObj.time} ${startObj.date})</span></span>
                 </div>
                 <div class="header-right" style="font-weight:bold; font-size:15px; color:${info.color}">
-                    ${info
+                    ${info.emoji} ${cycle.avgScore > 0 ? '+' : ''}${cycle.avgScore.toFixed(1)}
+                </div>
+            </div>`;
+
+            // Log Table
+            card += `<div class="log-container"><table class="log-table">
+                        <thead><tr><th>Thời gian</th><th>Điểm</th><th>Khuynh hướng</th></tr></thead>
+                        <tbody>`;
+            
+            const entries = cycle.entries || [];
+            if(entries.length === 0) {
+                card += `<tr><td colspan="3" style="text-align:center; padding:10px;">Không có dữ liệu</td></tr>`;
+            } else {
+                entries.forEach(e => {
+                   const val = Number(e.value||0);
+                   const entryInfo = getCategoryFromValue(val);
+                   const tStr = e.time || (e.ts ? formatDateTime(e.ts).time : '');
+                   const dStr = e.date || (e.ts ? formatDateTime(e.ts).date : '');
+
+                   card += `<tr>
+                        <td><strong>${tStr}</strong><br><span style="font-size:11px; color:#888;">${dStr}</span></td>
+                        <td style="font-weight:bold; color:${entryInfo.color}">${val>0?'+':''}${val}</td>
+                        <td>${entryInfo.emoji} ${entryInfo.label}</td>
+                    </tr>`;
+                });
+            }
+            card += `</tbody></table></div>`;
+
+            // Feedback Area
+            card += `<div class="feedback-area">`;
+            if (fb.q1) {
+                card += `<div class="saved-data">
+                    <div style="margin-bottom:8px; border-bottom:1px solid #c3e6cb; padding-bottom:5px;">✅ <b>Dữ liệu đã lưu</b></div>
+                    <div class="saved-item"><span class="saved-label">📝 Sự kiện đáng nhớ nhất:</span> ${fb.q1}</div>
+                    <div class="saved-item"><span class="saved-label">⚔️ Xung đột nội tâm:</span> ${fb.q2}</div>
+                    <div class="saved-item"><span class="saved-label">💡 Bài học:</span> ${fb.q3}</div>
+                    <hr style="border-top:1px dashed #abc; margin:10px 0;">
+                    <div class="saved-item">📱 Giao diện dễ dùng: ${renderStarStatic(fb.r1)}</div>
+                    <div class="saved-item">🧠 Giúp hiểu bản thân: ${renderStarStatic(fb.r2)}</div>
+                    <div class="saved-item">🦋 Giúp thay đổi hành vi: ${renderStarStatic(fb.r3)}</div>
+                    <div style="margin-top:6px; padding-top:6px; border-top:1px dotted #c3e6cb">
+                        <div class="saved-item">😊 Hài lòng kết quả: ${renderEmojiResult(fb.satResult)}</div>
+                        <div class="saved-item">📏 Hài lòng cây thước: ${renderEmojiResult(fb.satTool)}</div>
+                    </div>
+                </div>`;
+            } else {
+                card += `<div style="padding: 20px; text-align: center; color: #999; border: 1px dashed #ccc; border-radius: 8px;">
+                            🚫 Người dùng chưa ghi nhật ký phản tư cho chu kỳ này.
+                         </div>`;
+            }
+            card += `</div></div>`; // End card
+            return card;
+        });
+
+        // Đảo ngược danh sách card (Mới nhất nằm trên cùng) để khớp với Table
+        html += cardHtmlList.reverse().join('');
+
+        container.innerHTML = html;
+    }
+</script>
+
+</body>
+</html>

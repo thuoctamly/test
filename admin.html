@@ -114,7 +114,7 @@
 </div>
 
 <script>
-    // --- 1. CẤU HÌNH FIREBASE (ĐÃ FIX SẴN) ---
+    // --- 1. CẤU HÌNH FIREBASE (ĐÃ FIX SẴN TỪ INDEX.HTML CỦA BẠN) ---
     const firebaseConfig = { 
         apiKey : "AIzaSyBvSBloHwRCvWNzt37ThhxuPqVqgQfohlo" , 
         authDomain : "freudruler.firebaseapp.com" , 
@@ -132,7 +132,6 @@
     const db = firebase.database();
 
     // --- 2. CÁC HÀM TIỆN ÍCH (HELPER) TỪ INDEX.HTML ---
-    // Helper: Format thời gian
     function formatDateTime(ts) {
         if (!ts) return { date: '--', time: '--' };
         const d = new Date(ts);
@@ -141,7 +140,7 @@
         return { date, time };
     }
 
-    // Helper: Lấy thông tin màu sắc/label từ điểm số (Logic cốt lõi)
+    // Helper: Logic phân loại màu sắc và biểu tượng (Core Logic)
     function getCategoryFromValue(v) {
         const n = Number(v || 0);
         if (n <= -6667) return { key: 'bn_manh', label: 'Bản năng mạnh', emoji: '😈', color: '#8e44ad', cls: 'color-purple' };
@@ -151,14 +150,14 @@
         return { key: 'ego', label: 'Bản ngã', emoji: '👤', color: '#2ecc71', cls: 'color-green' };
     }
 
-    // Helper: Render Sao tĩnh
+    // Helper: Render Sao
     function renderStarStatic(val) {
         let s = "";
         for(let i=1; i<=5; i++) s += (i<=val ? "★" : "☆");
         return `<span style="color:#f1c40f; font-size:16px;">${s}</span> <small>(${val}/5)</small>`;
     }
 
-    // Helper: Render Emoji kết quả
+    // Helper: Render Emoji
     const EMOJI_SCALE = ['😡', '☹️', '😐', '🙂', '😍'];
     const EMOJI_LABELS = ['Rất không hài lòng', 'Không hài lòng', 'Bình thường', 'Hài lòng', 'Rất hài lòng'];
     function renderEmojiResult(val) {
@@ -172,14 +171,20 @@
     const usersContainer = document.getElementById('usersContainer');
     const userCountEl = document.getElementById('userCount');
 
+    // Lắng nghe dữ liệu
     db.ref('users').on('value', (snapshot) => {
         const users = snapshot.val();
         renderSidebar(users);
+    }, (error) => {
+        console.error("Lỗi Firebase:", error);
+        usersContainer.innerHTML = `<div style="color:red; text-align:center; padding:20px;">
+            Lỗi quyền truy cập!<br>Hãy kiểm tra lại Rules trên Firebase Console.
+        </div>`;
     });
 
     function renderSidebar(users) {
         if (!users) {
-            usersContainer.innerHTML = '<div style="text-align:center; padding:20px;">Không có dữ liệu</div>';
+            usersContainer.innerHTML = '<div style="text-align:center; padding:20px;">Chưa có dữ liệu nào.</div>';
             userCountEl.innerText = '0';
             return;
         }
@@ -189,8 +194,8 @@
         
         // Sắp xếp: Online lên đầu
         const sortedKeys = Object.keys(users).sort((a,b) => {
-            const statA = users[a].currentStatus === 'online' ? 1 : 0;
-            const statB = users[b].currentStatus === 'online' ? 1 : 0;
+            const statA = (users[a].currentStatus === 'online') ? 1 : 0;
+            const statB = (users[b].currentStatus === 'online') ? 1 : 0;
             return statB - statA;
         });
 
@@ -221,7 +226,7 @@
         userCountEl.innerText = count;
     }
 
-    // --- 4. LOGIC HIỂN THỊ CHI TIẾT (ĐỒNG BỘ 100% VỚI CLIENT) ---
+    // --- 4. LOGIC HIỂN THỊ CHI TIẾT (ĐỒNG BỘ 100%) ---
     window.loadUserDetail = function(userId) {
         // Highlight active
         document.querySelectorAll('.user-card').forEach(c => c.classList.remove('active'));
@@ -242,7 +247,6 @@
 
         const profile = data.profile || {};
         const history = data.history || [];
-        const current = data.currentCycle || {};
 
         let html = `
             <div class="profile-header">
@@ -265,7 +269,7 @@
             return;
         }
 
-        // --- A. BẢNG TỔNG KẾT (SUMMARY TABLE) - COPY TỪ INDEX.HTML ---
+        // --- A. BẢNG TỔNG KẾT (SUMMARY TABLE) ---
         html += `
             <h4 style="color:#4a148c; margin:0 0 10px 0; font-size: 16px; font-weight: 700; text-transform: uppercase; border-left: 4px solid #7b1fa2; padding-left: 10px;">📓 TỔNG KẾT LỊCH SỬ</h4>
             <div style="overflow-x:auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #ffffff; border: 1px solid #e1bee7; margin-bottom: 25px; border-radius: 8px;">
@@ -305,4 +309,22 @@
                 </tr>
             `;
         });
-        html
+        html += tableRows.reverse().join('');
+        html += `</tbody></table></div>`;
+
+        // --- B. DANH SÁCH THẺ CHI TIẾT ---
+        const cardHtmlList = history.map((cycle, realIndex) => {
+            const cycleNum = history.length - realIndex;
+            const startObj = formatDateTime(cycle.startTime);
+            const fb = cycle.feedback || {};
+            const info = getCategoryFromValue(cycle.avgScore);
+
+            let card = `<div class="cycle-card ${info.cls}">`;
+            
+            // Header
+            card += `<div class="card-header">
+                <div class="header-left">
+                    <strong>Chu kỳ ${cycleNum}</strong> <span style="font-size:13px; color:#555;"><span class="neutral-text">(từ ${startObj.time} ${startObj.date})</span></span>
+                </div>
+                <div class="header-right" style="font-weight:bold; font-size:15px; color:${info.color}">
+                    ${info

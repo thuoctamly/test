@@ -78,12 +78,17 @@
 </div>
 
 <script>
-    // --- 1. CẤU HÌNH FIREBASE (DÁN CONFIG CỦA BẠN VÀO ĐÂY) ---
-    const firebaseConfig = {
-        // ⚠️⚠️ DÁN LẠI ĐOẠN CONFIG CỦA BẠN VÀO ĐÂY NHÉ ⚠️⚠️
-        // (Copy y hệt từ file index.html sang)
-    };
-
+   // --- 1. CẤU HÌNH FIREBASE ---
+const firebaseConfig = { 
+  apiKey : "AIzaSyBvSBloHwRCvWNzt37ThhxuPqVqgQfohlo" , 
+  authDomain : "freudruler.firebaseapp.com" , 
+  databaseURL : "https://freudruler-default-rtdb.asia-southeast1.firebasedatabase.app" , 
+  projectId : "freudruler" , 
+  storageBucket : "freudruler.firebasestorage.app" , 
+  messagingSenderId : "907969291678" , 
+  appId : "1:907969291678:web:e0e99eb6550a31bd42a28f" , 
+  measurementId : "G-69JD3RTJQH" 
+};
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
@@ -274,4 +279,5 @@
 </script>
 
 </body>
+
 </html>
